@@ -1,4 +1,4 @@
-
+import random
 
 class Vertex():
 	def __init__(self, coord_x, coord_y, capacity_max, demand):
@@ -23,3 +23,4 @@ for i in range(n_vertices):
 	coord_x, coord_y, capacity_max, demand = input_aux.split()
 	new_vertex = Vertex(int(coord_x), int(coord_y), int(capacity_max), int(demand))
 	vertex_list.append(new_vertex)
+	
