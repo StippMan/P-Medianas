@@ -55,6 +55,7 @@ def makeGraph(n_vertices, n_medians, vertex_list, median_list):
 		for vertex in vertex_list:
 			if median.capacity_current + vertex.demand <= median.capacity_max:
 				insort(distList,(calcDist(median, vertex), vertex))
+
 		while len(distList) > 0 \
 			and median.capacity_current < median.capacity_max:
 			
