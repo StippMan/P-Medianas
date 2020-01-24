@@ -70,13 +70,7 @@ def makeGraph(n_vertices, n_medians, vertex_list, median_list):
 		for x in distList:
 			if median.capacity_current + x[1].demand <= median.capacity_max:
 				connectVertexToMedian(median, x[1], x[0])
-		# while len(distList) > 0 \
-		# 	and median.capacity_current < median.capacity_max:
-			
-		# 	closest = distList.pop(0)
-		# 	if not closest[1].isConnected:
-		# 		closest[1].distance = closest[0]
-		# 		connectVertexToMedian(median, closest[1])
+		
 		
 	for x in vertex_list:
 		if not vertex.isConnected:
@@ -108,14 +102,14 @@ def randomPopulation(n_vertices, n_medians, vertex_list):
 	solutionList = []
 	for i in range(0, int(7.5 * math.log(n_medians))):
 		solution = randomSol(n_vertices, n_medians, vertex_list)
-		print(solution.fitness)
-		insort(solutionList, solution)
-	for solution in solutionList:
-		print(solution.fitness)
+		# print(solution.fitness)
+		insort(solutionList, (solution.fitness, solution))
+		
+	for x in solutionList:
+		print(x[0])
 
 
 if __name__ == "__main__":
-
 	n_vertices, n_medians = input().split()
 	n_vertices = int(n_vertices)
 	n_medians = int(n_medians)
