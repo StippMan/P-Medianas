@@ -103,10 +103,36 @@ def randomPopulation(n_vertices, n_medians, vertex_list):
 	for i in range(0, int(7.5 * math.log(n_medians))):
 		solution = randomSol(n_vertices, n_medians, vertex_list)
 		# print(solution.fitness)
-		insort(solutionList, (solution.fitness, solution))
+		# insort(solutionList, (solution.fitness, solution))
+		solutionList.append(solution)
+	
+	# population = []
+	# for x in solutionList:
+	# 	population.append(x[1])
+	
+	return solutionList
+
+def tournament(population):
+	num = int(len(population)/2)
+	selection = []
+	for i in range(0, num):
+		winner = min(random.choices(population,k=4), key=lambda x: x.fitness)
+		selection.append(winner)
+	return selection
+
+
+
+def genetic(n_vertices, n_medians, vertex_list):
+	population = randomPopulation(n_vertices, n_medians, vertex_list)
+	generations = 0
+	selection = tournament(population)
+	
+	for x in selection:
+		print(x.fitness)
+	# while generations != 10:
+
 		
-	for x in solutionList:
-		print(x[0])
+
 
 
 if __name__ == "__main__":
@@ -122,7 +148,8 @@ if __name__ == "__main__":
 		new_vertex = Vertex(int(coord_x), int(coord_y), int(capacity_max), int(demand))
 		vertex_list.append(new_vertex)
 	
-	randomPopulation(n_vertices, n_medians, vertex_list)
+	genetic(n_vertices, n_medians, vertex_list)
+	# randomPopulation(n_vertices, n_medians, vertex_list)
 	# randomSol(n_vertices, n_medians, vertex_list)
 	# makeGraph(n_vertices, n_medians, vertex_list, )
 
