@@ -17,7 +17,7 @@ class Vertex():
 		return "Vertice(%d, %d)" % (self.coord_x, self.coord_y)
 
 	def __lt__(self, other):
-		self.distance < other.distance
+		return self.distance < other.distance
 	
 	def reset(self, capacity_max, demand):
 		self.capacity_max = capacity_max
@@ -25,6 +25,9 @@ class Vertex():
 		self.demand = demand
 		self.isConnected = False
 		self.distance = 0
+
+
+
 
 class Solution():
 	def __init__(self, nMedians, nVertices, vertices, medians,fitness):
@@ -35,7 +38,7 @@ class Solution():
 		self.fitness = fitness
 	
 	def __lt__(self, other):
-		self.fitness < other.fitness
+		return self.fitness < other.fitness
 	
 def testPopulation(population):
 	fitness= []
@@ -124,9 +127,7 @@ def randomPopulation(n_vertices, n_medians, vertex_list):
 	populationNumber = 100
 	for i in range(0, populationNumber):
 		solution = randomSol(n_vertices, n_medians, vertex_list)
-		# insort(solutionList, (solution.fitness, solution))
-		# print(solution.fitness)
-		solutionList.append(solution)
+		insort(solutionList, solution)
 	
 	return solutionList
 
@@ -159,20 +160,13 @@ def rank(population):
 	selection = []
 	pairs = []
 	weight = [i for i in reversed( range(1, len(population)+1) )]
-	population.sort(key=lambda x: x.fitness)
-	# testPopulation(selected)
 
-	for i in range(num):
-		selected = random.choices(population, weights = weight, k=1)
-		if (i%2 == 0 and i != 0):
-			selection.append(pairs)
-			pairs = []
-		print(selected[0].fitness)
-		j = population.index(selected[0])
-		weight.pop(j)
-		pairs.append(population.pop(j))
-		if i == num-1:
-			selection.append(pairs)
+	while len(selection) <= num/2:
+		print("len selection: " + str(len(selection)))
+		selected = random.choices(population, weights = weight, k=2) #muda aq
+		# print(selected[0].fitness)
+		if selected not in selection:
+			selection.append(selected)
 
 	return selection
 
@@ -222,10 +216,10 @@ def genetic(n_vertices, n_medians, vertex_list):
 	while generations != 1000:
 		selection = rank(population)
 			
-		for x in range(0, len(selection)):
+		for x in range(len(selection)):
 			# p1 e p2 sao listas de medianas (pai1 e pai2)
-			p1 = selection[x][0]
-			p2 = selection[x][1]
+			p1 = selection[x][0].medians.copy()
+			p2 = selection[x][1].medians.copy()
 			# testPopulation([p1,p2])
 
 			# makeSwapVec retorna uma tuplas de vetores de posições q n são iguais
@@ -234,14 +228,18 @@ def genetic(n_vertices, n_medians, vertex_list):
 			swap2 = aux[1]
 
 			#As funções chamadas alteram os seus parametros
-			crossover(p1.medians, p2.medians, swap1, swap2, random.randint(0, len(swap1)))
-			makeGraph(vertices, p1.medians)
-			p1.fitness = addDist(vertices)
-			makeGraph(vertices, p2.medians)
+			crossover(p1, p2, swap1, swap2, random.randint(0, len(swap1)))
+			makeGraph(vertices, p1)
+			fitness = addDist(vertices)
+			if fitness < population[-1].fitness:
+				population.pop()
+				p1.fitness = fitness
+				insort(population,p1)
+			
+
+			makeGraph(vertices, p2)
 			p2.fitness = addDist(vertices)
 			
-			population.append(p1)
-			population.append(p2)
 			# testPopulation([p1,p2])
 		generations+=1
 
