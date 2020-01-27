@@ -131,6 +131,7 @@ def randomPopulation(n_vertices, n_medians, vertex_list):
 	return solutionList
 
 def tournament(population):
+	# A função retorna uma tupla de soluções
 	num = int(len(population)/2)
 	if(num%2 != 0) :
 		num+=1
@@ -148,6 +149,31 @@ def tournament(population):
 
 		if i == num-1:
 			selection.append(pairs)
+	return selection
+
+def rank(population):
+	num = int(len(population)/2)
+	if(num%2 != 0) :
+		num+=1
+
+	selection = []
+	pairs = []
+	weight = [i for i in reversed( range(1, len(population)+1) )]
+	population.sort(key=lambda x: x.fitness)
+	# testPopulation(selected)
+
+	for i in range(num):
+		selected = random.choices(population, weights = weight, k=1)
+		if (i%2 == 0 and i != 0):
+			selection.append(pairs)
+			pairs = []
+		print(selected[0].fitness)
+		j = population.index(selected[0])
+		weight.pop(j)
+		pairs.append(population.pop(j))
+		if i == num-1:
+			selection.append(pairs)
+
 	return selection
 
 def makeSwapVec(p1,p2):
@@ -186,8 +212,15 @@ def genetic(n_vertices, n_medians, vertex_list):
 	# testPopulation(population)
 	generations = 0
 	media1 = testPopulation(population)
-	while generations != 5000:
-		selection = tournament(population)
+	selection = rank(population)
+
+	# for x in range(0, len(selection)):
+	# 		# p1 e p2 sao listas de medianas (pai1 e pai2)
+	# 		p1 = selection[x][0]
+	# 		p2 = selection[x][1]
+	# 		# testPopulation([p1,p2])
+	while generations != 1000:
+		selection = rank(population)
 			
 		for x in range(0, len(selection)):
 			# p1 e p2 sao listas de medianas (pai1 e pai2)
