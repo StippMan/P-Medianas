@@ -1,6 +1,7 @@
 import random
 import math
 from bisect import insort
+import bisect
 random.seed(379126485)
 
 class Vertex():
@@ -19,6 +20,9 @@ class Vertex():
 	def __lt__(self, other):
 		return self.distance < other.distance
 	
+	def __repr__(self):
+		return '\nVertex({},{})'.format(self.coord_x,self.coord_y)
+		
 	def reset(self, capacity_max, demand):
 		self.capacity_max = capacity_max
 		self.capacity_current = demand
@@ -39,6 +43,9 @@ class Solution():
 	
 	def __lt__(self, other):
 		return self.fitness < other.fitness
+	
+	def __repr__(self):
+		return '\nSolution({})'.format(self.fitness)
 	
 def testPopulation(population):
 	fitness= []
@@ -162,12 +169,13 @@ def rank(population):
 	weight = [i for i in reversed( range(1, len(population)+1) )]
 
 	while len(selection) <= num/2:
-		print("len selection: " + str(len(selection)))
-		selected = random.choices(population, weights = weight, k=2) #muda aq
+		# print("len selection: " + str(len(selection)))
+		selected = random.choices(population, weights = weight, k=2)
 		# print(selected[0].fitness)
-		if selected not in selection:
+		if selected[0] != selected[1] and \
+			selected[0] not in selection and\
+			selected[1] not in selection:
 			selection.append(selected)
-
 	return selection
 
 def makeSwapVec(p1,p2):
@@ -183,14 +191,21 @@ def makeSwapVec(p1,p2):
 		# median.reset(median.capacity_max, median.demand)
 		if median not in p1:
 			swapVec2.append(x)
-     
+		# print(swapVec,swapVec2)
 	if(len(swapVec) == 0):
 		print('Individuos iguais')
+		# print(p1,p2)
 		return p1,p2
     
 	return swapVec, swapVec2
 
-def crossover(p1, p2, swap1, swap2, k):
+def crossover(p1, p2):
+
+	# makeSwapVec retorna uma tuplas de vetores de posições q n são iguais
+	swap1,swap2 = makeSwapVec(p1,p2)
+	k = random.randint(0, len(swap1))
+
+
 	# swap sao as listas de trocas, e a func retorna uma tupla de medianas
 	
 	for x in range(0, k):
@@ -201,49 +216,50 @@ def crossover(p1, p2, swap1, swap2, k):
 	return p1, p2
 
 def genetic(n_vertices, n_medians, vertex_list):
-	vertices = vertex_list
+	# vertices = vertex_list
 	population = randomPopulation(n_vertices, n_medians, vertex_list)
+
 	# testPopulation(population)
 	generations = 0
-	media1 = testPopulation(population)
-	selection = rank(population)
+	# media1 = testPopulation(population)
+	# selection = rank(population)
 
 	# for x in range(0, len(selection)):
 	# 		# p1 e p2 sao listas de medianas (pai1 e pai2)
 	# 		p1 = selection[x][0]
 	# 		p2 = selection[x][1]
 	# 		# testPopulation([p1,p2])
-	while generations != 1000:
+	while generations != 100:
 		selection = rank(population)
-			
+		# population.sort()
 		for x in range(len(selection)):
 			# p1 e p2 sao listas de medianas (pai1 e pai2)
 			p1 = selection[x][0].medians.copy()
 			p2 = selection[x][1].medians.copy()
 			# testPopulation([p1,p2])
 
-			# makeSwapVec retorna uma tuplas de vetores de posições q n são iguais
-			aux = makeSwapVec(p1.medians,p2.medians)
-			swap1 = aux[0]
-			swap2 = aux[1]
-
+			
 			#As funções chamadas alteram os seus parametros
-			crossover(p1, p2, swap1, swap2, random.randint(0, len(swap1)))
-			makeGraph(vertices, p1)
-			fitness = addDist(vertices)
+			crossover(p1, p2)
+			makeGraph(vertex_list, p1)
+			fitness = addDist(vertex_list)
 			if fitness < population[-1].fitness:
 				population.pop()
-				p1.fitness = fitness
-				insort(population,p1)
-			
+				child1 = Solution(n_medians,n_vertices,vertex_list,p1,fitness)
+				insort(population, child1)
 
-			makeGraph(vertices, p2)
-			p2.fitness = addDist(vertices)
+			makeGraph(vertex_list, p2)
+			fitness = addDist(vertex_list)
+			if fitness < population[-1].fitness:
+				population.pop()
+				child2 = Solution(n_medians,n_vertices,vertex_list,p2,fitness)
+				insort(population, child2)
 			
 			# testPopulation([p1,p2])
 		generations+=1
-
-	print(media1, testPopulation(population))
+	print(population)
+	
+	# print(media1, testPopulation(population))
 
 	
 		
