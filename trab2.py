@@ -1,7 +1,7 @@
 import random
 import math
 from bisect import insort
-# random.seed(379126485)
+random.seed(379126485)
 
 class Vertex():
 	def __init__(self ,coord_x, coord_y, capacity_max, demand):
@@ -41,10 +41,10 @@ def testPopulation(population):
 	fitness= []
 	soma = 0
 	for x in population:
-		# print('====================')
-		# for y in x.medians:
-		# 	print(y,x.fitness)
-		# print(x.fitness)
+		print('====================')
+		for y in x.medians:
+			print(y,x.fitness)
+		print(x.fitness)
 		soma+=x.fitness
 		fitness.append(x.fitness)
 	# print(fitness)
@@ -160,19 +160,12 @@ def rank(population):
 
 	selection = []
 	weight = [i for i in reversed( range(1, len(population)+1) )]
-	aux = []
 
-	while len(selection) <= num:
-		selected = random.choices(population, weights = weight, k=1)
-		if(selected[0] not in selection):
-			aux.append(selected[0].fitness)
-			selection.append(selected[0])
-	pairs = []
-	for x in range(1, len(selection),2):
-		aux = [selection[x-1], selection[x+1]]
-		pairs.append(aux)
+	while len(selection) <= 2:
+		selecteds = random.choices(population, weights = weight, k=2)
+		if(selecteds[0] != selecteds[1]):
+			return selecteds
 
-	return pairs
 
 def makeSwapVec(p1,p2):
 	swapVec = []
@@ -197,8 +190,7 @@ def makeSwapVec(p1,p2):
 
 def crossover(p1, p2, swap1, swap2, k):
 	# swap sao as listas de trocas, e a func retorna uma tupla de medianas
-	random.shuffle(swap1)
-	random.shuffle(swap2)
+	
 	for x in range(0, k):
 		# i1 e i2 sao indices a serem trocados
 		i1 = swap1[x]
@@ -212,58 +204,72 @@ def genetic(n_vertices, n_medians, vertices):
 	population = randomPopulation(n_vertices, n_medians, vertex_list)
 	# testPopulation(population)
 	generations = 0
-	media1 = testPopulation(population)
-	selection = rank(population)
+	# media1 = testPopulation(population)
 	
 	
 
-	while generations != 1000:
+	while generations != 10000:
 		selection = rank(population)
+	
 		# testPopulation(population)
 		# selection = tournament(population)
-		for x in range(0, len(selection)):
-			# p1 e p2 sao listas de medianas (pai1 e pai2)
+		
+		# p1 e p2 sao listas de medianas (pai1 e pai2)
 
-			parent1 = selection[x][0]
-			parent2 = selection[x][1]
-			p1 = parent1.medians.copy()
-			p2 = parent2.medians.copy()
-			# makeSwapVec retorna uma tuplas de vetores de posições q n são iguais
-			# print('PAIS:')
-			# testPopulation([parent1,parent2])
-			aux = makeSwapVec(p1,p2)
-			if(aux == -1): 
-				continue
-			swap1 = aux[0]
-			swap2 = aux[1]
+		parent1 = selection[0]
+		parent2 = selection[1]
+		p1 = parent1.medians.copy()
+		p2 = parent2.medians.copy()
+		# makeSwapVec retorna uma tuplas de vetores de posições q n são iguais
+		aux = makeSwapVec(p1,p2)
+		# print('Vetores de troca:', aux)
+		# print('PAIS DA GERAÇÃO:', generations)
+		# testPopulation([parent1,parent2])
+		if(aux == -1):
+			generations+=1
 
-			# As funções chamadas alteram os seus parametros
-			
-
-			crossover(p1, p2, swap1, swap2, random.randint(0, len(swap1)-1))
-			makeGraph(vertices, p1)
-			fitness1 = addDist(vertices)
-
-
-			worstSolution = population[-1]
-			if(fitness1 < worstSolution.fitness):
-				population.pop(-1)
-				insort(population, Solution(n_medians, n_vertices, vertices, p1, fitness1))
-
-			makeGraph(vertices, p2)
-			fitness2 = addDist(vertices)
-
+			continue
+		swap1 = aux[0]
+		swap2 = aux[1]
+		print(generations)
+		# As funções chamadas alteram os seus parametros
 		
 
-			worstSolution = population[-1]
-			if(fitness2 < worstSolution.fitness):
-				population.pop(-1)
-				insort(population, Solution(n_medians, n_vertices, vertices, p2, fitness2))
+		crossover(p1, p2, swap1, swap2, random.randint(0, len(swap1)-1))
+		makeGraph(vertices, p1)
+		fitness1 = addDist(vertices)
+
+
+		worstSolution = population[-1]
+		# print('PIOR 1:')
+		# testPopulation([worstSolution])
+		a = Solution(n_medians, n_vertices, vertices, p1, fitness1)
+		# print("FILHOS: ", generations)
+		# testPopulation([a])
+		if(fitness1 < worstSolution.fitness):
+			population.pop(-1)
+			insort(population, a)
+
+
+		makeGraph(vertices, p2)
+		fitness2 = addDist(vertices)
+
+	
+
+		worstSolution = population[-1]
+		# print('PIOR 2:')
+		# testPopulation([worstSolution])
+
+		a = Solution(n_medians, n_vertices, vertices, p2, fitness2)
+		# testPopulation([a])
+		if(fitness2 < worstSolution.fitness):
+			population.pop(-1)
+			insort(population, a)
 			
 			
 		generations+=1
 
-	print(media1, testPopulation(population))
+	print(population[0].fitness)
 
 	
 		
