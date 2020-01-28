@@ -2,9 +2,6 @@ import random
 import math
 from bisect import insort
 # random.seed(379126485)
-import bisect
-random.seed(379126485)
-
 
 class Vertex():
 	def __init__(self ,coord_x, coord_y, capacity_max, demand):
@@ -22,18 +19,12 @@ class Vertex():
 	def __lt__(self, other):
 		return self.distance < other.distance
 	
-	def __repr__(self):
-		return '\nVertex({},{})'.format(self.coord_x,self.coord_y)
-		
 	def reset(self, capacity_max, demand):
 		self.capacity_max = capacity_max
 		self.capacity_current = demand
 		self.demand = demand
 		self.isConnected = False
 		self.distance = 0
-
-
-
 
 class Solution():
 	def __init__(self, nMedians, nVertices, vertices, medians,fitness):
@@ -45,11 +36,6 @@ class Solution():
 	
 	def __lt__(self, other):
 		return self.fitness < other.fitness
-
-	
-	def __repr__(self):
-		return '\nSolution({})'.format(self.fitness)
-
 	
 def testPopulation(population):
 	fitness= []
@@ -143,10 +129,8 @@ def randomPopulation(n_vertices, n_medians, vertex_list):
 	for i in range(0, populationNumber):
 		solution = randomSol(n_vertices, n_medians, vertex_list)
 		insort(solutionList, solution)
-
 		# print(solution.fitness)
 		# solutionList.append(solution)
-
 	
 	return solutionList
 
@@ -176,7 +160,6 @@ def rank(population):
 
 	selection = []
 	weight = [i for i in reversed( range(1, len(population)+1) )]
-
 	aux = []
 
 	while len(selection) <= num:
@@ -191,18 +174,6 @@ def rank(population):
 
 	return pairs
 
-
-	while len(selection) <= num/2:
-		# print("len selection: " + str(len(selection)))
-		selected = random.choices(population, weights = weight, k=2)
-		# print(selected[0].fitness)
-		if selected[0] != selected[1] and \
-			selected[0] not in selection and\
-			selected[1] not in selection:
-			selection.append(selected)
-	return selection
-
-
 def makeSwapVec(p1,p2):
 	swapVec = []
 	swapVec2 = []
@@ -216,29 +187,15 @@ def makeSwapVec(p1,p2):
 		# print('Pai 2:', median)
 		if median not in p1:
 			swapVec2.append(x)
-
+		
 	if(len(swapVec) == 0):
 		print('Individuos iguais')
 		return -1
 	random.shuffle(swapVec)
 	random.shuffle(swapVec2)
-
-		# print(swapVec,swapVec2)
-	if(len(swapVec) == 0):
-		print('Individuos iguais')
-		# print(p1,p2)
-		return p1,p2
-    
-
 	return swapVec, swapVec2
 
-def crossover(p1, p2):
-
-	# makeSwapVec retorna uma tuplas de vetores de posições q n são iguais
-	swap1,swap2 = makeSwapVec(p1,p2)
-	k = random.randint(0, len(swap1))
-
-
+def crossover(p1, p2, swap1, swap2, k):
 	# swap sao as listas de trocas, e a func retorna uma tupla de medianas
 	random.shuffle(swap1)
 	random.shuffle(swap2)
@@ -250,18 +207,11 @@ def crossover(p1, p2):
 		p1[i1], p2[i2] = p2[i2], p1[i1]
 	return p1, p2
 
-
 def genetic(n_vertices, n_medians, vertices):
 	vertex_list = vertices.copy()
-
-def genetic(n_vertices, n_medians, vertex_list):
-	# vertices = vertex_list
-
 	population = randomPopulation(n_vertices, n_medians, vertex_list)
-
 	# testPopulation(population)
 	generations = 0
-
 	media1 = testPopulation(population)
 	selection = rank(population)
 	
@@ -311,47 +261,9 @@ def genetic(n_vertices, n_medians, vertex_list):
 				insort(population, Solution(n_medians, n_vertices, vertices, p2, fitness2))
 			
 			
-
-	# media1 = testPopulation(population)
-	# selection = rank(population)
-
-	# for x in range(0, len(selection)):
-	# 		# p1 e p2 sao listas de medianas (pai1 e pai2)
-	# 		p1 = selection[x][0]
-	# 		p2 = selection[x][1]
-	# 		# testPopulation([p1,p2])
-	while generations != 100:
-		selection = rank(population)
-		# population.sort()
-		for x in range(len(selection)):
-			# p1 e p2 sao listas de medianas (pai1 e pai2)
-			p1 = selection[x][0].medians.copy()
-			p2 = selection[x][1].medians.copy()
-			# testPopulation([p1,p2])
-
-			
-			#As funções chamadas alteram os seus parametros
-			crossover(p1, p2)
-			makeGraph(vertex_list, p1)
-			fitness = addDist(vertex_list)
-			if fitness < population[-1].fitness:
-				population.pop()
-				child1 = Solution(n_medians,n_vertices,vertex_list,p1,fitness)
-				insort(population, child1)
-
-			makeGraph(vertex_list, p2)
-			fitness = addDist(vertex_list)
-			if fitness < population[-1].fitness:
-				population.pop()
-				child2 = Solution(n_medians,n_vertices,vertex_list,p2,fitness)
-				insort(population, child2)
-			
-			# testPopulation([p1,p2])
-
 		generations+=1
-	print(population)
-	
-	# print(media1, testPopulation(population))
+
+	print(media1, testPopulation(population))
 
 	
 		
