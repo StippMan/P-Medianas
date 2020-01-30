@@ -1,7 +1,7 @@
 import random
 import math
 from bisect import insort
-# random.seed(379126485)
+random.seed(379126485)
 
 class Vertex():
 	def __init__(self ,coord_x, coord_y, capacity_max, demand):
@@ -19,12 +19,18 @@ class Vertex():
 	def __lt__(self, other):
 		return self.distance < other.distance
 	
+	def __repr__(self):
+		return '\nVertex({})'.format((self.coord_x,self.coord_y))
+
 	def reset(self, capacity_max, demand):
 		self.capacity_max = capacity_max
 		self.capacity_current = demand
 		self.demand = demand
 		self.isConnected = False
 		self.distance = 0
+
+	def copy(self):
+		return Vertex(self.coord_x, self.coord_y, self.capacity_max, self.demand)
 
 class Solution():
 	def __init__(self, nMedians, nVertices, vertices, medians,fitness):
@@ -36,6 +42,9 @@ class Solution():
 	
 	def __lt__(self, other):
 		return self.fitness < other.fitness
+	
+	def __repr__(self):
+		return '\nSolution({})'.format(self.fitness)
 	
 def testPopulation(population):
 	fitness= []
@@ -178,6 +187,7 @@ def makeSwapVec(p1,p2):
 	swapVec = []
 	swapVec2 = []
 
+	# print(p1)
 	for x in range(0,len(p1)):
 		median = p1[x]
 		# print('Pai 1:', median)
@@ -189,33 +199,42 @@ def makeSwapVec(p1,p2):
 			swapVec2.append(x)
 		
 	if(len(swapVec) == 0):
-		print('Individuos iguais')
+		# print('Individuos iguais')
 		return -1
 	random.shuffle(swapVec)
 	random.shuffle(swapVec2)
 	return swapVec, swapVec2
 
+	
+
 def crossover(p1, p2, swap1, swap2, k):
 	# swap sao as listas de trocas, e a func retorna uma tupla de medianas
-	random.shuffle(swap1)
-	random.shuffle(swap2)
+
 	for x in range(0, k):
 		# i1 e i2 sao indices a serem trocados
 		i1 = swap1[x]
 		i2 = swap2[x]
 		# print(i1,i2)
 		p1[i1], p2[i2] = p2[i2], p1[i1]
+
+
+
 	return p1, p2
+
+
+def mutate(medians,vertices):
+	medPos = random.randint(0, len(medians)-1)
+	verPos = random.randint(0,len(vertices)-1)
+	
+	medians[medPos] = vertices[verPos].copy()
+
 
 def genetic(n_vertices, n_medians, vertices):
 	vertex_list = vertices.copy()
 	population = randomPopulation(n_vertices, n_medians, vertex_list)
 	# testPopulation(population)
 	generations = 0
-	media1 = testPopulation(population)
-	selection = rank(population)
-	
-	
+	media1 = testPopulation(population)	
 
 	while generations != 1000:
 		selection = rank(population)
@@ -241,6 +260,13 @@ def genetic(n_vertices, n_medians, vertices):
 			
 
 			crossover(p1, p2, swap1, swap2, random.randint(0, len(swap1)-1))
+			
+			chance = random.random()
+			if chance <= 0.05:
+				mutate(p1,vertices)
+			elif chance <= 0.1:
+				mutate(p2,vertices)
+
 			makeGraph(vertices, p1)
 			fitness1 = addDist(vertices)
 
@@ -262,14 +288,8 @@ def genetic(n_vertices, n_medians, vertices):
 			
 			
 		generations+=1
-
-	print(media1, testPopulation(population))
-
-	
-		
-
-		
-		
+	print(population)
+	# print(media1, testPopulation(population))
 
 	# while generations != 10:
 
