@@ -127,7 +127,7 @@ def randomSol(n_vertices, n_medians, original_vertex_list):
 def randomPopulation(n_vertices, n_medians, vertex_list):
 	solutionList = []
 	populationNumber = int(7.5 * math.log(n_vertices))
-	# populationNumber = 50
+	# populationNumber = 100
 	for i in range(0, populationNumber):
 		solution = randomSol(n_vertices, n_medians, vertex_list)
 		insort(solutionList, solution)
@@ -196,11 +196,9 @@ def genetic(n_vertices, n_medians, vertices):
 	generations = 0
 	# media1 = testPopulation(population)
 	
-	while generations != 2000:
+	while generations != 5000:
 		# selection = rank(population)
 		selection = tournament(population)
-	
-		# testPopulation(population)
 		
 		# p1 e p2 sao listas de medianas (pai1 e pai2)
 
@@ -210,10 +208,6 @@ def genetic(n_vertices, n_medians, vertices):
 		p2 = parent2.medians.copy()
 		# makeSwapVec retorna uma tuplas de vetores de posições q n são iguais
 		aux = makeSwapVec(p1,p2)
-		# print(generations)
-		# print('Vetores de troca:', aux)
-		# print('PAIS DA GERAÇÃO:', generations)
-		# testPopulation([parent1,parent2])
 		if(aux == -1):
 			generations+=1
 			continue
@@ -228,40 +222,25 @@ def genetic(n_vertices, n_medians, vertices):
 
 
 		worstSolution = population[-1]
-		# print('PIOR 1:')
-		# testPopulation([worstSolution])
-		a = Solution(n_medians, n_vertices, vertices, p1, fitness1)
-		# print("FILHOS: ", generations)
-		# testPopulation([a])
+		offspring = Solution(n_medians, n_vertices, vertices, p1, fitness1)
 		if(fitness1 < worstSolution.fitness):
-			insort(population, a)
+			insort(population, offspring)
 
 
 		makeGraph(vertices, p2)
 		fitness2 = addDist(vertices)
-
-
 		worstSolution = population[-1]
-		# print('PIOR 2:')
-		# testPopulation([worstSolution])
+		offspring = Solution(n_medians, n_vertices, vertices, p2, fitness2)
 
-		a = Solution(n_medians, n_vertices, vertices, p2, fitness2)
-		# testPopulation([a])
 		if(fitness2 < worstSolution.fitness):
-			insort(population, a)
+			insort(population, offspring)
 			
 			
+		print(population[0].fitness)
 		generations+=1
 
-	print(population[0].fitness)
 
-	
-		
-
-		
-		
-
-	# while generations != 10:
+	return population[0].fitness
 
 		
 
