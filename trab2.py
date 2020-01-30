@@ -105,7 +105,7 @@ def makeGraph(vertex_list, median_list):
 	for x in vertex_list:
 		# print(x.distance)
 		if not x.isConnected:
-			print('Não deu certo')
+			# print('Não deu certo')
 			return -1
 	return median_list
 
@@ -196,7 +196,7 @@ def genetic(n_vertices, n_medians, vertices):
 	generations = 0
 	# media1 = testPopulation(population)
 	
-	while generations != 5000:
+	while generations != 6000:
 		# selection = rank(population)
 		selection = tournament(population)
 		
@@ -209,6 +209,10 @@ def genetic(n_vertices, n_medians, vertices):
 		# makeSwapVec retorna uma tuplas de vetores de posições q n são iguais
 		aux = makeSwapVec(p1,p2)
 		if(aux == -1):
+			parents = [parent1, parent2]
+			random.shuffle(parents)
+			i = population.index(parents[0])
+			population.pop(i)
 			generations+=1
 			continue
 		swap1 = aux[0]
@@ -236,10 +240,10 @@ def genetic(n_vertices, n_medians, vertices):
 			insort(population, offspring)
 			
 			
-		print(population[0].fitness)
 		generations+=1
 
 
+	print(population[0].fitness)
 	return population[0].fitness
 
 		
@@ -265,32 +269,18 @@ if __name__ == "__main__":
 	for i in range(n_vertices):
 		input_aux = input()
 		coord_x, coord_y, capacity_max, demand = input_aux.split()
-		# print(capacity_max)
-		
 		new_vertex = Vertex(int(coord_x), int(coord_y), int(capacity_max), int(demand))
 		vertex_list.append(new_vertex)
 	
+	bestSol = genetic(n_vertices, n_medians, vertex_list)
+	# n = 0
+	# while(n != 10):
+	# 	sol = genetic(n_vertices, n_medians, vertex_list)
+	# 	if(sol < bestSol):
+	# 		bestSol = sol
+	# 	n+=1
+	# print(bestSol)
 
-	# print(len(vertex_list))
-	genetic(n_vertices, n_medians, vertex_list)
-	# randomSol(n_vertices, n_medians, vertex_list)
-
-
-
-
-
-	# for x in range(200):
-	# 	a = vertex_list.copy()
-	# 	random.shuffle(a)
-	# 	# medians = selectMedians(a, n_medians)
-	# 	medians = a[0:n_medians]
-	# 	# medians
-	# 	medians = makeGraph(vertex_list, medians)
-	# 	for x in vertex_list:
-	# 		if(not x.isConnected):
-	# 			print(medians)
-
-	# runTest()
 	
 
 
