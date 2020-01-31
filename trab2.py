@@ -334,12 +334,12 @@ def genetic(n_vertices, n_medians, vertices):
 		for i in range(5):
 			localSearch(population[i])
 			
-		if generations%100 == 0:
-			print(generations, population[0].fitness)
+		# if generations%200 == 0:
+		# 	print(population[0].fitness)
 
 		generations+=1
 
-	print(generations, population[0].fitness)
+	print(population[0].fitness)
 	return population[0].fitness
 
 def runTest():
