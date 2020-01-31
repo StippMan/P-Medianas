@@ -1,7 +1,7 @@
-import random
+import random as rd
 import math
 from bisect import insort
-# random.seed(379126485)
+# rd.seed(379126485)
 
 class Vertex():
 	def __init__(self ,coord_x, coord_y, capacity_max, demand):
@@ -15,6 +15,9 @@ class Vertex():
 	
 	def __str__(self):
 		return "Vertice(%d, %d)" % (self.coord_x, self.coord_y)
+
+	# def __eq__(self, other):
+	# 	return self.coord_x == other.coord_x and self.coord_y == other.coord_y
 
 	def __lt__(self, other):
 		return self.distance < other.distance
@@ -45,6 +48,9 @@ class Solution():
 	
 	def __repr__(self):
 		return '\nSolution({})'.format(self.fitness)
+	
+	def copy(self):
+		return Solution(self.nMedians, self.nVertices, self.vertices.copy(), self.medians.copy(),self.fitness)
 	
 def testPopulation(population):
 	fitness= []
@@ -126,7 +132,7 @@ def randomSol(n_vertices, n_medians, original_vertex_list):
 	vertex_list = original_vertex_list.copy()
 	aux = -1
 	while aux == -1:
-		random.shuffle(vertex_list)
+		rd.shuffle(vertex_list)
 		median_list = selectMedians(vertex_list, n_medians)
 		aux = makeGraph(vertex_list, median_list)
 	
@@ -149,8 +155,8 @@ def tournament(population):
 	# A função retorna uma tupla de soluções
 	selection = []
 	while len(selection) <= 2:
-		winner1 = min(random.choices(population,k=3), key=lambda x: x.fitness)
-		winner2 = min(random.choices(population,k=3), key=lambda x: x.fitness)
+		winner1 = min(rd.choices(population,k=3), key=lambda x: x.fitness)
+		winner2 = min(rd.choices(population,k=3), key=lambda x: x.fitness)
 		if winner1 != winner2:
 			selection.append(winner1)
 			selection.append(winner2)
@@ -161,7 +167,7 @@ def rank(population):
 	weight = [i for i in reversed( range(1, len(population)+1) )]
 
 	while len(selection) <= 2:
-		selecteds = random.choices(population, weights = weight, k=2)
+		selecteds = rd.choices(population, weights = weight, k=2)
 		if(selecteds[0] != selecteds[1]):
 			return selecteds
 
@@ -184,8 +190,8 @@ def makeSwapVec(p1,p2):
 	if(len(swapVec) == 0):
 		# print('Individuos iguais')
 		return -1
-	random.shuffle(swapVec)
-	random.shuffle(swapVec2)
+	rd.shuffle(swapVec)
+	rd.shuffle(swapVec2)
 	return swapVec, swapVec2
 
 	
@@ -205,11 +211,71 @@ def crossover(p1, p2, swap1, swap2, k):
 	return p1, p2
 
 
-def mutate(medians,vertices):
-	medPos = random.randint(0, len(medians)-1)
-	verPos = random.randint(0,len(vertices)-1)
-	
-	medians[medPos] = vertices[verPos].copy()
+def mutate(solution):
+	sol = solution.copy()
+	chance = rd.random()
+	if chance <= 0.2:
+		medPos = rd.randrange(0, len(sol.medians))
+		verPos = rd.randrange(0, len(sol.vertices))
+		# print(sol.vertices, verPos)
+		while sol.vertices[verPos] in sol.medians:
+			verPos = rd.randrange(0, len(sol.vertices))
+		sol.medians[medPos] = sol.vertices[verPos]
+		makeGraph(sol.vertices,sol.medians)
+		sol.fitness = addDist(sol.vertices)
+		if sol.fitness < solution.fitness:
+			return sol
+	return solution
+
+
+
+def findclosest(solution,median,memo):
+	strcoords = str(median.coord_x) + "-" + str(median.coord_y)
+	if memo.get(strcoords,None) == None:
+		closest = []
+		for vertex in solution.vertices:
+			if vertex not in solution.medians:
+				dist = calcDist(median,vertex)
+				insort(closest,(dist,vertex))
+				if len(closest) > 3:
+					closest.pop()
+		closestV = []
+		for c in closest:
+			closestV.append(c[1])
+		memo[strcoords] = closestV
+	return memo[strcoords]
+
+# def findclosest(solution,median,banlist,memo):
+	# banlist.append(median)
+	# closest = []
+	# for vertex in solution.vertices:
+	# 	if vertex not in solution.medians and vertex not in banlist:
+	# 		dist = calcDist(median,vertex)
+	# 		insort(closest,(dist,vertex))
+	# 		if len(closest) > 3:
+	# 			closest.pop()
+	# return [closest[0][1],closest[1][1],closest[2][1]]
+
+
+def localSearch(parent, median = None, memo = {}):
+
+	closestmemo = {}
+	strcoords = str(parent.medians)
+	if memo.get(strcoords,None) == None:
+		memo[strcoords] = parent	
+		if median == None:
+			median = parent.medians[rd.randrange(0,parent.nMedians)]
+		closestlist = findclosest(parent,median,closestmemo)
+		for closest in closestlist:
+			sol = parent.copy()
+			sol.medians.remove(median)
+			sol.medians.append(closest)
+			makeGraph(sol.vertices, sol.medians)
+			sol.fitness = addDist(sol.vertices)
+			if sol.fitness < parent.fitness:
+				strcoords = str(parent.medians)
+				memo[strcoords] = localSearch(sol,closest,memo=memo)
+	return memo[strcoords]
 
 
 def genetic(n_vertices, n_medians, vertices):
@@ -233,7 +299,7 @@ def genetic(n_vertices, n_medians, vertices):
 		aux = makeSwapVec(p1,p2)
 		if(aux == -1):
 			parents = [parent1, parent2]
-			random.shuffle(parents)
+			rd.shuffle(parents)
 			i = population.index(parents[0])
 			population.pop(i)
 			generations+=1
@@ -243,33 +309,38 @@ def genetic(n_vertices, n_medians, vertices):
 		# As funções chamadas alteram os seus parametros
 		
 
-		crossover(p1, p2, swap1, swap2, random.randint(0, len(swap1)-1))
+		crossover(p1, p2, swap1, swap2, rd.randint(0, len(swap1)-1))
 		makeGraph(vertices, p1)
 		fitness1 = addDist(vertices)
 
 
 		worstSolution = population[-1]
-		offspring = Solution(n_medians, n_vertices, vertices, p1, fitness1)
+		offspring1 = Solution(n_medians, n_vertices, vertices, p1, fitness1)
+		offspring = mutate(offspring1)
 		if(fitness1 < worstSolution.fitness):
+			# insort(population, localSearch(offspring))
 			insort(population, offspring)
 
 
 		makeGraph(vertices, p2)
 		fitness2 = addDist(vertices)
 		worstSolution = population[-1]
-		offspring = Solution(n_medians, n_vertices, vertices, p2, fitness2)
-
+		offspring2 = Solution(n_medians, n_vertices, vertices, p2, fitness2)
+		offspring = mutate(offspring2)
 		if(fitness2 < worstSolution.fitness):
+			# insort(population, localSearch(offspring))
 			insort(population, offspring)
+
+		for i in range(5):
+			localSearch(population[i])
 			
-			
+		if generations%100 == 0:
+			print(generations, population[0].fitness)
+
 		generations+=1
 
-	print(population[0].fitness)
+	print(generations, population[0].fitness)
 	return population[0].fitness
-
-		
-
 
 def runTest():
 	# assert selectMedians(vertex_list, n_medians) == testMedian(vertex_list, n_medians)
@@ -296,13 +367,24 @@ if __name__ == "__main__":
 	
 	bestSol = genetic(n_vertices, n_medians, vertex_list)
 	# n = 0
-	# while(n != 10):
+	# while(n != 5):
+	# 	print()
 	# 	sol = genetic(n_vertices, n_medians, vertex_list)
 	# 	if(sol < bestSol):
 	# 		bestSol = sol
 	# 	n+=1
 	# print(bestSol)
 
+"""
+python3 trab2.py < SJC1.dat > outSJC1.txt
+python3 trab2.py < SJC2.dat > outSJC2.txt
+python3 trab2.py < SJC3a.dat > outSJC3a.txt
+python3 trab2.py < SJC3b.dat > outSJC3b.txt
+python3 trab2.py < SJC4a.dat > outSJC4a.txt
+python3 trab2.py < SJC4b.dat > outSJC4b.txt
+
+
+"""
 	
 
 
